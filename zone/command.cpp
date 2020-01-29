@@ -2585,43 +2585,39 @@ void command_mana(Client *c, const Seperator *sep)
 void command_flymode(Client *c, const Seperator *sep) {
     Client *t = c;
 
-	if (strlen(sep->arg[1]) == 1 && !(sep->arg[1][0] == '0' || sep->arg[1][0] == '1' || sep->arg[1][0] == '2' || sep->arg[1][0] == '3' || sep->arg[1][0] == '4' || sep->arg[1][0] == '5'))
-		c->Message(Chat::White, "#flymode [0/1/2/3/4/5]");
-	else {
+    if (strlen(sep->arg[1]) == 1 &&
+        !(sep->arg[1][0] == '0' || sep->arg[1][0] == '1' || sep->arg[1][0] == '2' || sep->arg[1][0] == '3' ||
+          sep->arg[1][0] == '4' || sep->arg[1][0] == '5')) {
+        c->Message(Chat::White, "#flymode [0/1/2/3/4/5]");
+    } else {
         if (c->GetTarget() && c->GetTarget()->IsClient())
             t = c->GetTarget()->CastToClient();
-		}
+    }
 
-		int fm = atoi(sep->arg[1]);
+    int fm = atoi(sep->arg[1]);
 
-		t->SetFlyMode(static_cast<GravityBehavior>(fm));
-		t->SendAppearancePacket(AT_Levitate, fm);
-        uint32 account = c->AccountID();
-		if (sep->arg[1][0] == '0') {
-			c->Message(Chat::White, "Setting %s to Grounded", t->GetName());
-            database.SetGMFlymode(account, 0);
-		}
-		else if (sep->arg[1][0] == '1') {
-			c->Message(Chat::White, "Setting %s to Flying", t->GetName());
-            database.SetGMFlymode(account, 1);
-		}
-		else if (sep->arg[1][0] == '2') {
-			c->Message(Chat::White, "Setting %s to Levitating", t->GetName());
-            database.SetGMFlymode(account, 2);
-		}
-		else if (sep->arg[1][0] == '3') {
-			c->Message(Chat::White, "Setting %s to In Water", t->GetName());
-            database.SetGMFlymode(account, 3);
-		}
-		else if (sep->arg[1][0] == '4') {
-			c->Message(Chat::White, "Setting %s to Floating(Boat)", t->GetName());
-            database.SetGMFlymode(account, 4);
-		}
-		else if (sep->arg[1][0] == '5') {
-			c->Message(Chat::White, "Setting %s to Levitating While Running", t->GetName());
-            database.SetGMFlymode(account, 5);
-		}
-	}
+    t->SetFlyMode(static_cast<GravityBehavior>(fm));
+    t->SendAppearancePacket(AT_Levitate, fm);
+    uint32 account = c->AccountID();
+    if (sep->arg[1][0] == '0') {
+        c->Message(Chat::White, "Setting %s to Grounded", t->GetName());
+        database.SetGMFlymode(account, 0);
+    } else if (sep->arg[1][0] == '1') {
+        c->Message(Chat::White, "Setting %s to Flying", t->GetName());
+        database.SetGMFlymode(account, 1);
+    } else if (sep->arg[1][0] == '2') {
+        c->Message(Chat::White, "Setting %s to Levitating", t->GetName());
+        database.SetGMFlymode(account, 2);
+    } else if (sep->arg[1][0] == '3') {
+        c->Message(Chat::White, "Setting %s to In Water", t->GetName());
+        database.SetGMFlymode(account, 3);
+    } else if (sep->arg[1][0] == '4') {
+        c->Message(Chat::White, "Setting %s to Floating(Boat)", t->GetName());
+        database.SetGMFlymode(account, 4);
+    } else if (sep->arg[1][0] == '5') {
+        c->Message(Chat::White, "Setting %s to Levitating While Running", t->GetName());
+        database.SetGMFlymode(account, 5);
+    }
 }
 
 void command_showskills(Client *c, const Seperator *sep)
@@ -13256,10 +13252,10 @@ void command_godmode(Client *c, const Seperator *sep){
         c->SendAppearancePacket(AT_Levitate, state);
         database.SetGMFlymode(account, state);
         c->SetHideMe(state);
-        c->Message(CC_Default, "Turning GodMode %s for %s (zone for gmspeed to take effect)", state ? "On" : "Off", c->GetName());
+        c->Message(Chat::White, "Turning GodMode %s for %s (zone for gmspeed to take effect)", state ? "On" : "Off", c->GetName());
     }
     else
-        c->Message(CC_Default, "Usage: #godmode [on/off]");
+        c->Message(Chat::White, "Usage: #godmode [on/off]");
 }
 
 // All new code added to command.cpp should be BEFORE this comment line. Do no append code to this file below the BOTS code block.
