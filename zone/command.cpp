@@ -224,6 +224,7 @@ int command_init(void)
 		command_add("globalview", "Lists all qglobals in cache if you were to do a quest with this target.", 80, command_globalview) ||
 		command_add("gm", "- Turn player target's or your GM flag on or off", 80, command_gm) ||
 		command_add("gmspeed", "[on/off] - Turn GM speed hack on/off for you or your player target", 100, command_gmspeed) ||
+        command_add("godmode", "[on/off] - Turns on/off hideme, gmspeed, invul, and flymode.", 200, command_godmode) ||
 		command_add("gmzone", "[zone_short_name] [zone_version=0] [identifier=gmzone] - Zones to a private GM instance", 100, command_gmzone) ||
 		command_add("goto", "[playername] or [x y z] [h] - Teleport to the provided coordinates or to your target", 10, command_goto) ||
 		command_add("grid", "[add/delete] [grid_num] [wandertype] [pausetype] - Create/delete a wandering grid", 170, command_grid) ||
@@ -1820,6 +1821,8 @@ void command_invul(Client *c, const Seperator *sep)
 
 	if(sep->arg[1][0] != 0) {
 		t->SetInvul(state);
+        uint32 account = t->AccountID();
+        database.SetGMInvul(account, state);
 		c->Message(Chat::White, "%s is %s invulnerable from attack.",  t->GetName(), state?"now":"no longer");
 	}
 	else
@@ -2579,38 +2582,44 @@ void command_mana(Client *c, const Seperator *sep)
 		t->SetMana(t->CalcMaxMana());
 }
 
-void command_flymode(Client *c, const Seperator *sep)
-{
-	Mob *t = c;
+void command_flymode(Client *c, const Seperator *sep) {
+    Client *t = c;
 
 	if (strlen(sep->arg[1]) == 1 && !(sep->arg[1][0] == '0' || sep->arg[1][0] == '1' || sep->arg[1][0] == '2' || sep->arg[1][0] == '3' || sep->arg[1][0] == '4' || sep->arg[1][0] == '5'))
 		c->Message(Chat::White, "#flymode [0/1/2/3/4/5]");
 	else {
-		if (c->GetTarget()) {
-			t = c->GetTarget();
+        if (c->GetTarget() && c->GetTarget()->IsClient())
+            t = c->GetTarget()->CastToClient();
 		}
 
 		int fm = atoi(sep->arg[1]);
 
 		t->SetFlyMode(static_cast<GravityBehavior>(fm));
 		t->SendAppearancePacket(AT_Levitate, fm);
+        uint32 account = c->AccountID();
 		if (sep->arg[1][0] == '0') {
 			c->Message(Chat::White, "Setting %s to Grounded", t->GetName());
+            database.SetGMFlymode(account, 0);
 		}
 		else if (sep->arg[1][0] == '1') {
 			c->Message(Chat::White, "Setting %s to Flying", t->GetName());
+            database.SetGMFlymode(account, 1);
 		}
 		else if (sep->arg[1][0] == '2') {
 			c->Message(Chat::White, "Setting %s to Levitating", t->GetName());
+            database.SetGMFlymode(account, 2);
 		}
 		else if (sep->arg[1][0] == '3') {
 			c->Message(Chat::White, "Setting %s to In Water", t->GetName());
+            database.SetGMFlymode(account, 3);
 		}
 		else if (sep->arg[1][0] == '4') {
 			c->Message(Chat::White, "Setting %s to Floating(Boat)", t->GetName());
+            database.SetGMFlymode(account, 4);
 		}
 		else if (sep->arg[1][0] == '5') {
 			c->Message(Chat::White, "Setting %s to Levitating While Running", t->GetName());
+            database.SetGMFlymode(account, 5);
 		}
 	}
 }
@@ -13233,6 +13242,24 @@ void command_network(Client *c, const Seperator *sep)
 		c->Message(Chat::White, "getopt optname - Retrieve the current option value set.");
 		c->Message(Chat::White, "setopt optname - Set the current option allowed.");
 	}
+}
+
+void command_godmode(Client *c, const Seperator *sep){
+    bool state = atobool(sep->arg[1]);
+    uint32 account = c->AccountID();
+
+    if (sep->arg[1][0] != 0)
+    {
+        c->SetInvul(state);
+        database.SetGMInvul(account, state);
+        database.SetGMSpeed(account, state ? 1 : 0);
+        c->SendAppearancePacket(AT_Levitate, state);
+        database.SetGMFlymode(account, state);
+        c->SetHideMe(state);
+        c->Message(CC_Default, "Turning GodMode %s for %s (zone for gmspeed to take effect)", state ? "On" : "Off", c->GetName());
+    }
+    else
+        c->Message(CC_Default, "Usage: #godmode [on/off]");
 }
 
 // All new code added to command.cpp should be BEFORE this comment line. Do no append code to this file below the BOTS code block.
