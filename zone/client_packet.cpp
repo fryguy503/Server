@@ -1231,7 +1231,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		gm_hide_me = atoi(row[6]);
 		account_creation = atoul(row[7]);
         gminvul = atoi(row[8]);
-        flymode = atoi(row[9]);
+        flymode = static_cast<GravityBehavior>(atoi(row[9]));
         tellsoff = gm_hide_me;
 	}
 
